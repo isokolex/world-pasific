@@ -1,0 +1,890 @@
+<?hh
+
+function main() {
+  // Create a Map using collection literal syntax
+  $map = Map {"A" => 1, "B" => 2, "C" => 3};
+
+  // Add elements using "$c[$k]=$v" syntax; note that if $k is
+  // already present, "$c[$k]=$v" syntax will overwrite the previous
+  // value
+  $map["D"] = 4;
+  $map["E"] = 5;
+
+  // Access value by key using "$c[$k]" syntax; note that "$c[$k]"
+  // syntax will throw an OutOfBoundsException if the key is not present
+  echo $map["A"] . "\n";
+
+  // Access value by key via get(); null will be returned if the key is
+  // not present
+  echo $map->get("B") . "\n\n";
+
+  // Remove element by key; if the key is not present the remove()
+  // method will do nothing and return
+  $map->remove("B");
+
+  // Testing if a key is present
+  echo ($map->contains("A") ? "true" : "false") . "\n\n";
+
+  // Iterate over the values using "foreach ($c as $v)" syntax
+  foreach ($map as $v) {
+    echo $v . "\n";
+  }
+
+  // Iterate over the keys and values using "foreach ($c as $k=>$v)"
+  // syntax
+  foreach ($map as $k => $v) {
+    echo $k . ": " . $v . "\n";
+  }
+}
+
+main(); // REMEMBER, insertion order is maintained.
+<?hh
+
+function main() {
+  $m = Map {1 => 'a', 2 => 'b', 3 => 'c', 4 => 'd'};
+  var_dump($m->filterWithKey(function($k, $v) { return $k >= 3; }));
+}
+
+main();
+object(Map)#1 (2) {
+  [3]=>
+  string(1) "c"
+  [4]=>
+  string(1) "d"
+}
+<?hh
+
+function main() {
+  // Create a Set using collection literal syntax
+  $set = Set {"A", "B"};
+
+  // Add elements using "$c[]=$v" syntax
+  $set[] = "C";
+
+  // This will have no effect since "B" exists already
+  $set[] = "B";
+
+  // Add elements using the add() method
+  $set->add("D")->add("E");
+
+  // Remove element by value
+  $set->remove("B");
+
+  // Testing if a value is present
+  echo ($set->contains("A") ? "true" : "false") . "\n\n";
+
+  // Iterate over the values using "foreach ($c as $v)" syntax
+  foreach ($set as $item) {
+    echo $item . "\n";
+  }
+}
+
+main();
+<?hh
+function foo(): void {
+  $s = Set {2, 3, 4};
+  $v = Set {2, 3, 5};
+  $s->add(6);
+  $z = $s->removeAll($v); //difference between $v and $s
+  var_dump($s, $v, $z);
+}
+
+foo();
+object(Set)#1 (2) {
+  int(4)
+  int(6)
+}
+object(Set)#2 (3) {
+  int(2)
+  int(3)
+  int(5)
+}
+object(Set)#1 (2) {
+  int(4)
+  int(6)
+}
+<?hh
+
+function main() {
+  $p = Pair {7, 'a'};
+  echo $p[0] . "\n";
+  echo $p[1] . "\n";
+  echo "\n";
+  foreach ($p as $val) {
+    echo $val . "\n";
+  }
+}
+
+main();
+<?hh
+$vec = Vector {1, 2, 3};
+<?hh
+
+// This example creates collections using literal syntax and
+// stores these collections in normal local variables
+function f() {
+  $vec = Vector {1, 2, 3};
+  var_dump($vec);
+  $map = Map {42 => 'foo', 73 => 'bar', 144 => 'baz'};
+  var_dump($map);
+}
+
+f();
+object(Vector)#1 (3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(2)
+  [2]=>
+  int(3)
+}
+object(Map)#1 (3) {
+  [42]=>
+  string(3) "foo"
+  [73]=>
+  string(3) "bar"
+  [144]=>
+  string(3) "baz"
+}
+<?hh
+class C {
+  public static $bar = Map {'a' => 1, 'b' => 2};
+
+  // Each instance of class C will get its own copy
+  // of Vector {1, 2, 3} in property $foo
+  public $foo = Vector {1, 2, 3};
+
+  // Each invocation of h() with no parameters will
+  // return a distinct empty Vector
+  function h($x = Vector {}) {
+    return $x;
+  }
+
+  function j() {
+    static $y = Map {1 => 'a', 2 => 'b'};
+    return $y;
+  }
+}
+<?hh
+
+function main() {
+  // Collections are objects.
+  $v = Vector {1, 2, 3};
+  echo is_array($v) ? '$v is an array' : '$v is not an array';
+  echo "\n";
+  echo is_object($v) ? '$v is an object' : '$v is not an object';
+  echo "\n";
+  var_dump($v);
+}
+
+main();
+$v is not an array
+$v is an object
+object(Vector)#1 (3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(2)
+  [2]=>
+  int(3)
+}
+<?hh
+// Like all objects, collections has "reference-like"
+// semantics for assignment, parameter passing, and
+// foreach.
+function foo($v) {
+  $v[1] = 7;
+}
+
+function main() {
+  $v1 = Vector {1, 2, 3};
+  $v2 = $v1;
+  foo($v2);
+  var_dump($v1);
+  echo "\n";
+  foreach ($v1 as $key => $value) {
+    echo $key . " => " . $value . "\n";
+    if ($key == 0) {
+      $v1[2] = 9;
+    }
+  }
+}
+
+main();
+object(Vector)#1 (3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(7)
+  [2]=>
+  int(3)
+}
+
+0 => 1
+1 => 7
+2 => 9
+<?hh
+// Certain kinds of modification, such as
+// removing an element, will cause iterators to
+// be invalidated (including foreach loops).
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  foreach ($m as $key => $value) {
+    echo $key . " => " . $value . "\n";
+    if ($key == 'a') {
+      $m->remove('d');
+    }
+  }
+}
+
+main();
+<?hh
+// Using "$c[$k]" syntax or using the at() method
+// will throw an exception if the specified key is
+// not present. Using the get() method will return
+// NULL if the specified key is not present.
+function main() {
+  $m = Vector {};
+  try {
+    var_dump($m[0]);
+  } catch (OutOfBoundsException $e) {
+    echo "Caught exception 1\n";
+  }
+
+  try {
+    var_dump($m->at(0));
+  } catch (OutOfBoundsException $e) {
+    echo "Caught exception 2\n";
+  }
+
+  try {
+    var_dump($m->get(0));
+  } catch (OutOfBoundsException $e) {
+    echo "Caught exception 3\n";
+  }
+}
+
+main();
+<?hh
+// The "read-only" style interfaces (such as ConstMap)
+// can be used to indicate that a function will not
+// modify the collection.
+function foo(ConstMap<string,int> $m, string $k): int {
+  echo $m[$k] . "\n";
+}
+
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  foo($m, 'c');
+}
+<?hh
+// The keys() method can be used on Vector and Map
+// to get a Vector of the keys.
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  $v = $m->keys();
+  var_dump($v);
+}
+
+main();
+object(Vector)#2 (4) {
+  [0]=>
+  string(1) "a"
+  [1]=>
+  string(1) "b"
+  [2]=>
+  string(1) "c"
+  [3]=>
+  string(1) "d"
+}
+<?hh
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  $m2 = $m->map(function(int $x):int { return $x + 10; });
+  var_dump($m2);
+}
+
+main();
+object(Map)#2 (4) {
+  ["a"]=>
+  int(11)
+  ["b"]=>
+  int(12)
+  ["c"]=>
+  int(13)
+  ["d"]=>
+  int(14)
+}
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  $m2 = $m->filter(function(int $x):bool { return $x % 2 == 0; });
+  var_dump($m2);
+}
+
+main();
+object(Map)#2 (2) {
+  ["b"]=>
+  int(2)
+  ["d"]=>
+  int(4)
+}
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  $result = $m->filter(function(int $x):bool { return $x % 2 == 0; })
+              ->map(function(int $x):int { return $x + 1; });
+  foreach ($result as $key => $value) {
+    echo $key . " => " . $value . "\n";
+  }
+}
+
+main();
+function main() {
+  $m = Map {'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4};
+  $iterable = $m->items();
+  $m['a'] = 100;
+  $i = 0;
+  foreach ($iterable as $t) {
+    echo $t[0] . " => " . $t[1] . "\n";
+    if ($i == 2) {
+      echo "Removing key 'a'\n";
+      $m->remove('a');
+    }
+    ++$i;
+  }
+}
+main();
+a => 100
+b => 2
+c => 3
+Removing key 'a'
+<?hh
+function main() {
+  $vec = Vector {11};
+  $vec->addAll(Vector {22, 33, 44});
+  var_dump($vec);
+}
+
+main();
+object(Vector)#1 (4) {
+  [0]=>
+  int(11)
+  [1]=>
+  int(22)
+  [2]=>
+  int(33)
+  [3]=>
+  int(44)
+}
+function main() {
+  $map = Map {'a' => 11};
+  $map->setAll(Map {'b' => 22, 'c' => 33});
+  var_dump($map);
+}
+
+main();
+object(Map)#1 (3) {
+  ["a"]=>
+  int(11)
+  ["b"]=>
+  int(22)
+  ["c"]=>
+  int(33)
+}
+function main() {
+  $m = Map {'a' => 11, 'b' => 22, 'c' => 33};
+  $v = new Vector($m);
+  var_dump($v);
+}
+
+main();
+object(Vector)#1 (3) {
+  [0]=>
+  int(11)
+  [1]=>
+  int(22)
+  [2]=>
+  int(33)
+}
+<?hh
+// Example showing add(), items(), and the general collection interfaces
+function process_elements<T>(ConstCollection<T> $in): OutputCollection<T> {
+  $out = Vector {};
+  if (!($in instanceof ConstVector)) {
+   return null;
+  }
+  foreach ($in->items() as $elm) {
+    if ($elm > 1) {
+      $out->add($elm);
+    }
+  }
+  return $out;
+}
+
+function main(): void {
+  $x = Vector {1, 2, 3};
+  var_dump(process_elements($x));
+}
+
+main();
+object(HH\Vector)#2 (2) {
+  [0]=>
+  int(2)
+  [1]=>
+  int(3)
+}
+function foo(Iterator<int> $it) { .. }
+function g() { yield 1; yield 2; }
+
+function main() {
+  $gen = g();
+  foo($gen);
+}
+
+main();
+function array_compose($f, $g): array {
+  $ret = array();
+  foreach ($f as $x => $y) {
+    if (array_key_exists($y, $g)) {
+      $ret[$x] = $g[$y];
+    }
+  }
+  return $ret;
+}
+function array_compose<T1, T2, T3>(
+  Indexish<T1, T2> $f,
+  Indexish<T2, T3> $g
+): array<T1, T3> {
+  $ret = array();
+  foreach ($f as $x => $y) {
+    if (array_key_exists($y, $g)) {
+      $ret[$x] = $g[$y];
+    }
+  }
+  return $ret;
+}
+function map_compose<T1, T2, T3>(
+  Indexish<T1, T2> $f,
+  Indexish<T2, T3> $g
+): Map<T1, T3> {
+  $ret = Map {};
+  foreach ($f as $x => $y) {
+    if (array_key_exists($y, $g)) {
+      $ret[$x] = $g[$y];
+    }
+  }
+  return $ret;
+}
+function main_indexish(): void {
+  $arr1 = array(1, 2, 3, 4, 5);
+  $arr2 = array(6, 7, 8, 9, 10);
+  var_dump(array_compose($arr1, $arr2)); // original
+  var_dump(array_compose($arr1, $arr2)); // modified
+  var_dump(map_compose($arr1, $arr2));
+
+  $map1 = Map {0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5};
+  $map2 = Map {0 => 6, 1 => 7, 2 => 8, 3 => 9, 4 => 10};
+  var_dump(array_compose($map1, $map2)); // original
+  var_dump(array_compose($map1, $map2)); // modified
+  var_dump(map_compose($map1, $map2));
+}
+
+main_indexish()
+array(4) {
+  [0]=>
+  int(7)
+  [1]=>
+  int(8)
+  [2]=>
+  int(9)
+  [3]=>
+  int(10)
+}
+array(4) {
+  [0]=>
+  int(7)
+  [1]=>
+  int(8)
+  [2]=>
+  int(9)
+  [3]=>
+  int(10)
+}
+object(Map)#1 (4) {
+  [0]=>
+  int(7)
+  [1]=>
+  int(8)
+  [2]=>
+  int(9)
+  [3]=>
+  int(10)
+}
+array(4) {
+  [0]=>
+  int(7)
+  [1]=>
+  int(8)
+  [2]=>
+  int(9)
+  [3]=>
+  int(10)
+}
+array(4) {
+  [0]=>
+  int(7)
+  [1]=>
+  int(8)
+  [2]=>
+  int(9)
+  [3]=>
+  int(10)
+}
+object(Map)#3 (4) {
+  [0]=>
+  int(7)
+  [1]=>
+  int(8)
+  [2]=>
+  int(9)
+  [3]=>
+  int(10)
+}
+<?hh
+
+class Person {
+  private string $name;
+  private int $age;
+
+  public function __construct(string $name, int $age) {
+    $this->name = $name;
+    $this->age = $age;
+  }
+}
+<?hh
+class Person {
+ public function __construct(public string $name,
+   protected int $age,
+ private bool $gender) {}
+}
+<?php
+
+abstract class DayOfWeek {
+  const Sunday = 0;
+  const Monday = 1;
+  const Tuesday = 2;
+  const Wednesday = 3;
+  const Thursday = 4;
+  const Friday = 5;
+  const Saturday = 6;
+}
+
+function foo() {
+  return DayOfWeek::Wednesday; // returns a 3
+}
+<?hh
+class Box<T> {
+  protected T $data;
+
+  public function __construct(T $data) {
+    $this->data = $data;
+  }
+
+  public function getData(): T {
+    return $this->data;
+  }
+}
+<?hh
+
+function main_gen() {
+  $gi = new Box(3);
+  $gs = new Box("Hi");
+  $ga = new Box(array());
+  echo $gi->getData()."\n";
+  echo $gs->getData()."\n";
+  echo $ga->getData()."\n";
+}
+
+main_gen();
+<?hh // strict
+
+// Everything is annotated and type checked
+class StrictClass {
+  private string $str;
+  public function __construct() {
+    $this->str = "Hello";
+  }
+
+  public function foo(int $x, int $y): int {
+    if ($x < $y) {
+      return 27;
+    }
+    return 34;
+  }
+
+  public function bar(string $a, string $b): string {
+    return $a . $b;
+  }
+}
+require_once $_SERVER['DOCUMENT_ROOT'].'/core/funs/init.php';
+
+// Outside of this file, no one knows that these types are ints. They do know
+// that USER_ID is an ID and COW_ID is an ID
+newtype ID = int;
+newtype USER_ID as ID = ID;
+newtype COW_ID as ID = ID;
+
+function assert_user_id(int $x): USER_ID {
+  // Everyone knows all user ids are odd
+  invariant($x % 2, sprintf('Invalid user ID: %d', $x));
+  return $x;
+}
+
+function assert_cow_id(int $x): COW_ID {
+  invariant($x % 2 === 0, sprintf('Invalid cow ID: %d', $x));
+  return $x;
+}
+
+function id_to_int(ID $id): int {
+  return $id;
+}
+function get_something_string(ID $id, string $something): string {
+  return sprintf("Awesome %s #%d\n", $something, id_to_int($id));
+}
+
+function get_user_string(USER_ID $id): string {
+  return get_something_string($id, 'user');
+}
+
+function get_cow_string(COW_ID $id): string {
+  return get_something_string($id, 'cow');
+}
+require_once "UserID.php";
+require_once "UsingUserID.php";
+
+function user_id_main(): string {
+  $ret = get_user_string(assert_user_id(123));
+  $ret .= get_cow_string(assert_cow_id(222));
+  return $ret;
+}
+function getGETParams(): Map<string, mixed> {
+  return Map::fromArray($_GET);
+}
+
+function getPOSTParams(): Map<string, mixed> {
+  return Map::fromArray($_POST);
+}
+function isGET(): bool {
+  return $_SERVER['REQUEST_METHOD'] === 'GET';
+}
+public function intParamX(string $name): int {
+    $params = $this->getParams();
+    invariant($params->contains($name), sprintf('Unknown param: %s', $name));
+    $param = $params[$name];
+    invariant(is_numeric($param), sprintf('Param %s is not an int', $name));
+    return (int)$param;
+  }
+
+  public function intParam(string $name): ?int {
+    $params = $this->getParams();
+    if (!$params->contains($name)) { return null; }
+    $param = $params[$name];
+    if (!is_numeric($param)) { return null; }
+    return (int)$param;
+  }
+}
+
+final class MyGETRequest extends MyRequest {
+  public function getParams(): Map<string, mixed> {
+    return getGETParams();
+  }
+}
+
+final class MyPOSTRequest extends MyRequest {
+  public function getParams(): Map<string, mixed> {
+    return getPOSTParams();
+  }
+}
+require_once "NonStrictFile.php";
+require_once "StrictFile.php";
+
+function get_and_post_main(): string {
+  if (isGET()) {
+    return sprintf(
+      "GET param: %d",
+      (new MyGETRequest())->intParamX('myIntParam'),
+    );
+  } else {
+    $request = new MyPOSTRequest();
+    return sprintf(
+      "POST param: %d",
+      (new MyPOSTRequest())->intParamX('myIntParam'),
+    );
+  }
+}
+final class AssertException extends Exception {}
+
+final class Assert {
+  public static function isNum(mixed $x): num {
+    if (is_float($x)) {
+      return $x;
+    } else if (is_int($x)) {
+      return $x;
+    }
+    throw new AssertException('Expected an int or float value');
+  }
+
+  public static function isInt(mixed $x): int {
+    if (is_int($x)) {
+      return $x;
+    }
+    throw new AssertException('Expected an int');
+  }
+
+  public static function isFloat(mixed $x): float {
+    if (is_float($x)) {
+      return $x;
+    }
+    throw new AssertException('Expected a float');
+  }
+
+  public static function isString(mixed $x): string {
+    if (is_string($x)) {
+      return $x;
+    }
+    throw new AssertException('Expected a string');
+  }
+
+  // For arrays you need to check every element
+  public static function isArrayOf<T>(
+    (function(mixed): T) $fn,
+    mixed $x,
+  ): array<T> {
+    if (is_array($x)) {
+      return array_map($fn, $x);
+    }
+    throw new AssertException('Expected an array');
+  }
+}
+require_once "Assert.php";
+require_once $_SERVER['DOCUMENT_ROOT'].'/core/funs/init.php';
+
+function get_assert_demo_data(): array<string, mixed> {
+  return array(
+    'int' => 123456789,
+    'float' => 3.14,
+    'string' => 'I am a string',
+    'good_array' => array(3.1, 4.1, 5.9),
+    'bad_array' => array(1.2, 'duck', 3.4),
+  );
+}
+
+function add_array_of_floats(array<float> $arr): float {
+  $ret = 0.0;
+  foreach ($arr as $f) {
+    $ret += $f;
+  }
+  return $ret;
+}
+
+function assert_main(): string {
+  $data = get_assert_demo_data();
+  $ret = sprintf("int is %u\n", Assert::isInt($data['int']));
+  $ret .= sprintf("int is %g\n", Assert::isFloat($data['float']));
+  $ret .= "string is ".Assert::isString($data['string'])."\n";
+
+  Assert::isNum($data['int']);
+  Assert::isNum($data['float']);
+  try {
+    Assert::isNum($data['string']);
+  } catch (AssertException $e) {
+    $ret .= '"'.Assert::isString($data['string'])."\" is not a num\n";
+  }
+
+  $ret .= sprintf(
+    "Sum of floats is %g\n",
+    add_array_of_floats(
+      Assert::isArrayOf(class_meth('Assert', 'isFloat'), $data['good_array']),
+    ),
+  );
+  try {
+    Assert::isArrayOf(class_meth('Assert', 'isFloat'), $data['bad_array']);
+  } catch (AssertException $e) {
+    $ret .= 'Bad array failed assertion: '.$e->getMessage()."\n";
+  }
+  return $ret;
+}
+<?hh // strict
+
+type DBResultExtra = shape('age' => int);
+type DBResult = shape(
+  'id' => int,
+  'name' => string,
+  'extra' => DBResultExtra,
+);
+
+final class FakeDB {
+  public function getRawRows(): array<array<string, mixed>> {
+    $good_extra = json_encode(array('age' => 40));
+    $bad_extra = 'corrupt data';
+    // Real code would query a DB, but for now let's hardcode it
+    return array(
+      array(
+        'id' => 123,
+        'name' => 'Alice',
+        'extra' => $good_extra,
+      ),
+      array(
+        'id' => 456,
+        'name' => 'Bob',
+        'extra' => $bad_extra,
+      ),
+    );
+  }
+  public function processRow(array<string, mixed> $row): ?DBResult {
+    $row = Map::fromArray($row);
+    $id = $row->contains('id') ? $row['id'] : null;
+    $name = $row->contains('name') ? $row['name'] : null;
+    $extra = $row->contains('extra') ? json_decode($row['extra'], true) : null;
+
+    // Ignore rows with invalid IDs or names
+    if (!is_int($id) || !is_string($name)) {
+      return null;
+    }
+
+    // Try to recover from a bad extra column
+    if (!is_array($extra)) {
+      $extra = shape('age' => 0);
+    } else {
+      $extra = Map::fromArray($extra);
+      $extra = shape('age' => $extra->contains('age') ? $extra['age'] : 0);
+    }
+
+    return shape('id' => $id, 'name' => $name, 'extra' => $extra);
+  }
+
+  public function getDBResults(): Vector<DBResult> {
+    $ret = Vector {};
+    foreach ($this->getRawRows() as $raw_row) {
+      $row = $this->processRow($raw_row);
+      if ($row !== null) {
+        $ret->add($row);
+      }
+    }
+    return $ret;
+  }
+}
+require_once "FakeDB.php";
+require_once $_SERVER['DOCUMENT_ROOT'].'/core/funs/init.php';
+
+function db_result_main(): string {
+  $ret = '';
+  foreach ((new FakeDB())->getDBResults() as $result) {
+    $ret .= sprintf(
+      "id => %u, name => %s, extra => array('age' => %u)\n",
+      $result['id'],
+      $result['name'],
+      $result['extra']['age'],
+    );
+  }
+  return $ret;
+}
